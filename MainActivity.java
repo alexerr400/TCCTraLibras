@@ -1,33 +1,38 @@
 package com.example.u15161.opencvtste4;
-import android.content.Intent;
-import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
-import android.view.View;
 import android.view.WindowManager;
+import android.widget.VideoView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements CvCameraViewListener2 {
-    protected static final String TAG = "MYAPP::OPENCV";
+    private static final String TAG = "MYAPP::OPENCV";
 
-    protected CameraBridgeViewBase mOpenCvCameraView;
+    private CameraBridgeViewBase mOpenCvCameraView;
 
 
     BaseLoaderCallback mCallBack = new BaseLoaderCallback(this) {
@@ -37,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
                 case BaseLoaderCallback.SUCCESS:
                 {
                     Log.i(TAG, "OpenCV loaded successfully");
-                    
                     mOpenCvCameraView.enableView();
 
                     break;
@@ -53,15 +57,24 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_main);
 
+
+        VideoView video = (VideoView) findViewById(R.id.verVideo);
+        video.bringToFront();
+        Uri videopath = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.introducao);
+        video.setVideoURI(videopath);
+        video.start();
+
+
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
-
 
 
     }
@@ -98,58 +111,16 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-/*
+
         Mat src = inputFrame.rgba();
         Mat cannyEdges = new Mat();
-        MatOfPoint mop = new MatOfPoint();
-        MatOfInt moi = new MatOfInt();
-
-
-        //Imgproc.Canny(src, cannyEdges,10, 100);
-        Imgproc.convexHull(mop,moi);
-
+        Imgproc.Canny(src, cannyEdges,10, 100);// src-MatImages     cannyEdges-MatEdges   threshhold1 e 2
+        //Imgproc.findContours();
+        //Imgproc.drawContours();
         return cannyEdges;
-        */
 
 
-        Mat rgba = inputFrame.rgba();
-        org.opencv.core.Size sizeRgba = rgba.size();
 
-        Mat rgbaInnerWindow;
-        Mat cannyEdges = new Mat();
-
-        int rows = (int) sizeRgba.height;
-        int cols = (int) sizeRgba.width;
-
-        int left = cols / 8;
-        int top = rows / 8;
-
-        int width = cols * 3 / 4;
-        int height = rows * 3 / 4;
-
-        //get sub-image
-        rgbaInnerWindow = rgba.submat(top, top + height, left, left + width);
-
-        //MatOfPoint mop = new MatOfPoint(rgbaInnerWindow);
-        //MatOfInt moi = new MatOfInt(6);
-
-        Imgproc.Canny(rgbaInnerWindow, cannyEdges, 10, 100);
-
-        //Imgproc.convexHull(mop,moi);
-
-        Imgproc.cvtColor(cannyEdges, rgbaInnerWindow, Imgproc.COLOR_GRAY2BGRA, 4);
-
-        List<MatOfPoint> pontos = new ArrayList<MatOfPoint>();
-
-
-        Imgproc.findContours(rgbaInnerWindow,pontos,rgba,Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-
-        for(int i=0; i<pontos.size(); i++)
-        Imgproc.drawContours(rgbaInnerWindow, pontos, i, new Scalar(255.0, 255.0, 255.0), 5);
-
-        rgbaInnerWindow.release();
-
-        return rgba;
     }
 
 }
