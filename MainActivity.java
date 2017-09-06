@@ -1,12 +1,19 @@
 package com.example.u15161.opencvtste4;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.SystemClock;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.VideoView;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -31,9 +38,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements CvCameraViewListener2 {
     private static final String TAG = "MYAPP::OPENCV";
-
     private CameraBridgeViewBase mOpenCvCameraView;
-
+    private boolean jaFoi = false;
 
     BaseLoaderCallback mCallBack = new BaseLoaderCallback(this) {
         @Override
@@ -64,19 +70,39 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
 
         setContentView(R.layout.activity_main);
 
+        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
+        final VideoView video = (VideoView) findViewById(R.id.verVideo);
 
-        VideoView video = (VideoView) findViewById(R.id.verVideo);
         video.bringToFront();
-        Uri videopath = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.introducao);
+
+        Uri videopath = Uri.parse("android.resource://"+getPackageName()+"/"+R.raw.intru);
         video.setVideoURI(videopath);
+
+
         video.start();
 
+        video.setVisibility(SurfaceView.VISIBLE);
 
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
-        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
-        mOpenCvCameraView.setCvCameraViewListener(this);
+       //saber como pegar as dimensoes da tela para usar aqui embaixo
 
+        if (LinearLayout.HORIZONTAL < LinearLayout.VERTICAL){
+        if (!jaFoi) {
+            video.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    jaFoi = true;
+                    video.setVisibility(View.GONE);
+                    mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+                    mOpenCvCameraView.setCvCameraViewListener(MainActivity.this);
 
+                }
+            });
+        }
+        }else
+        {
+            mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+            mOpenCvCameraView.setCvCameraViewListener(MainActivity.this);
+        }
     }
 
     @Override
@@ -118,9 +144,5 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
         //Imgproc.findContours();
         //Imgproc.drawContours();
         return cannyEdges;
-
-
-
     }
-
 }
